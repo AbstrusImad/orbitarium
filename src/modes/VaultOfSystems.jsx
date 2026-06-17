@@ -15,7 +15,7 @@ import { downloadJSON } from '../utils/exportImport.js'
 import { useToast } from '../components/shared/Toast.jsx'
 
 export default function VaultOfSystems({ onOpenSystem }) {
-  const { systems, deleteSystem, duplicateSystem, importSystem, loadIntoDraft, chainRelics } = useStore()
+  const { systems, deleteSystem, duplicateSystem, importSystem, loadIntoDraft, chainRelics, chainLoading } = useStore()
   const { push } = useToast()
   const [query, setQuery] = useState('')
   const [stabFilter, setStabFilter] = useState('all') // all | stable | unstable
@@ -81,6 +81,14 @@ export default function VaultOfSystems({ onOpenSystem }) {
         ) : chainRelics && chainRelics.length > 0 ? (
           <div className="mono text-[11px] text-mute py-5">
             No local drafts yet. Your authority maps notarized on GenLayer are shown below.
+          </div>
+        ) : chainLoading ? (
+          <div className="flex items-center gap-3 mono text-[11px] text-mute py-8">
+            <span
+              className="inline-block h-2 w-2 rounded-full animate-pulse"
+              style={{ background: 'var(--sage)', boxShadow: '0 0 8px var(--sage)' }}
+            />
+            Reading authority maps notarized on GenLayer Bradbury...
           </div>
         ) : (
           <EmptyState title="No systems yet" hint="Create an authority core and seal it on GenLayer, or import a system JSON, to populate the vault." />

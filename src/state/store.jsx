@@ -59,6 +59,7 @@ export function StoreProvider({ children }) {
   const [draft, setDraft] = useState(() => initial.current?.draft || emptyDraft())
   const [seeded, setSeeded] = useState(initial.current?.seeded ?? false)
   const [chainRelics, setChainRelics] = useState([])
+  const [chainLoading, setChainLoading] = useState(true)
 
   // First run: ensure vault is seeded.
   useEffect(() => {
@@ -96,23 +97,35 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     let cancelled = false
     let timer = null
+    const retries = []
     const load = async () => {
       try {
         const relics = await fetchChainRelics()
-        if (!cancelled) setChainRelics(relics)
+        if (cancelled) return
+        setChainRelics(relics)
+        if (Array.isArray(relics) && relics.length > 0) setChainLoading(false)
       } catch (e) {
         if (!cancelled) setChainRelics([])
       }
     }
     if ((settings.genlayerMode || 'live') === 'live') {
+      setChainLoading(true)
       load()
+      // Quick initial retries in case the first gen_call is rate-limited or
+      // slow: the void and vault should not flash an empty state prematurely.
+      retries.push(setTimeout(load, 6000))
+      retries.push(setTimeout(load, 16000))
+      // Hard cap: never spin forever; resolve loading after 20s regardless.
+      retries.push(setTimeout(() => { if (!cancelled) setChainLoading(false) }, 20000))
       timer = setInterval(load, 90000)
     } else {
       setChainRelics([])
+      setChainLoading(false)
     }
     return () => {
       cancelled = true
       if (timer) clearInterval(timer)
+      retries.forEach(clearTimeout)
     }
   }, [settings.genlayerMode])
 
@@ -209,13 +222,14 @@ export function StoreProvider({ children }) {
       duplicateSystem,
       importSystem,
       chainRelics,
+      chainLoading,
       draft,
       setDraft,
       loadIntoDraft,
       resetDraft,
       clearStorage
     }),
-    [settings, updateSettings, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, chainRelics, draft, loadIntoDraft, resetDraft, clearStorage]
+    [settings, updateSettings, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, chainRelics, chainLoading, draft, loadIntoDraft, resetDraft, clearStorage]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

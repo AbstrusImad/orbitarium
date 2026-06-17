@@ -22,7 +22,7 @@ const RISK_ACCENT = {
 }
 
 export default function VoidEntry({ onEnter }) {
-  const { resetDraft, setDraft, chainRelics, settings } = useStore()
+  const { resetDraft, setDraft, chainRelics, chainLoading, settings } = useStore()
   const reduced = settings?.reducedMotion
 
   const relics = useMemo(() => (Array.isArray(chainRelics) ? chainRelics.slice(0, 6) : []), [chainRelics])
@@ -145,7 +145,9 @@ export default function VoidEntry({ onEnter }) {
             />
             {liveCount > 0
               ? `${liveCount} authority ${liveCount === 1 ? 'map' : 'maps'} notarized on GenLayer Bradbury`
-              : 'Notarized on GenLayer Bradbury'}
+              : chainLoading
+                ? 'Reading notarized maps...'
+                : 'Notarized on GenLayer Bradbury'}
           </button>
         </motion.div>
 
