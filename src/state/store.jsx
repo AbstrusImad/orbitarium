@@ -14,9 +14,10 @@ const DEFAULT_SETTINGS = {
   theme: 'dark',
   animationIntensity: 'high', // low | medium | high
   reducedMotion: false,
-  visualDensity: 'comfortable', // compact | comfortable
-  genlayerMode: 'live' // 'live' | 'mock'. Default is live.
+  visualDensity: 'comfortable' // compact | comfortable
 }
+// Orbitarium always runs against the live GenLayer Bradbury contract. There is
+// no user facing mock toggle: reads and notarization always target the chain.
 
 const DEFAULT_WALLET = { connected: false, address: null }
 
@@ -53,7 +54,12 @@ const StoreContext = createContext(null)
 
 export function StoreProvider({ children }) {
   const initial = useRef(loadState())
-  const [settings, setSettings] = useState({ ...DEFAULT_SETTINGS, ...(initial.current?.settings || {}) })
+  const [settings, setSettings] = useState(() => {
+    const merged = { ...DEFAULT_SETTINGS, ...(initial.current?.settings || {}) }
+    // Drop any legacy mock toggle persisted from older builds: live only.
+    delete merged.genlayerMode
+    return merged
+  })
   const [wallet, setWallet] = useState(initial.current?.wallet || DEFAULT_WALLET)
   const [systems, setSystems] = useState(() => initial.current?.systems || seedVault())
   const [draft, setDraft] = useState(() => initial.current?.draft || emptyDraft())
@@ -88,12 +94,12 @@ export function StoreProvider({ children }) {
     root.classList.toggle('theme-dark', settings.theme === 'dark')
     root.classList.toggle('theme-light', settings.theme === 'light')
     document.body.classList.toggle('reduce-motion', settings.reducedMotion)
-    setGenLayerMode(settings.genlayerMode || 'live')
+    setGenLayerMode('live')
   }, [settings])
 
-  // Live mode: fetch on-chain relics on load and gently poll. These merge into
-  // the Vault as verified capsules; failures are swallowed so local content is
-  // never disturbed.
+  // Always fetch the on-chain relic feed (read-only public ledger) on load and
+  // gently poll. These merge into the Vault as verified capsules; failures are
+  // swallowed so local content is never disturbed.
   useEffect(() => {
     let cancelled = false
     let timer = null
@@ -108,29 +114,28 @@ export function StoreProvider({ children }) {
         if (!cancelled) setChainRelics([])
       }
     }
-    if ((settings.genlayerMode || 'live') === 'live') {
-      setChainLoading(true)
-      load()
-      // Quick initial retries in case the first gen_call is rate-limited or
-      // slow: the void and vault should not flash an empty state prematurely.
-      retries.push(setTimeout(load, 6000))
-      retries.push(setTimeout(load, 16000))
-      // Hard cap: never spin forever; resolve loading after 20s regardless.
-      retries.push(setTimeout(() => { if (!cancelled) setChainLoading(false) }, 20000))
-      timer = setInterval(load, 90000)
-    } else {
-      setChainRelics([])
-      setChainLoading(false)
-    }
+    setChainLoading(true)
+    load()
+    // Quick initial retries in case the first gen_call is rate-limited or slow:
+    // the void and vault should not flash an empty state prematurely.
+    retries.push(setTimeout(load, 6000))
+    retries.push(setTimeout(load, 16000))
+    // Hard cap: never spin forever; resolve loading after 20s regardless.
+    retries.push(setTimeout(() => { if (!cancelled) setChainLoading(false) }, 20000))
+    timer = setInterval(load, 90000)
     return () => {
       cancelled = true
       if (timer) clearInterval(timer)
       retries.forEach(clearTimeout)
     }
-  }, [settings.genlayerMode])
+  }, [])
 
   const updateSettings = useCallback((patch) => {
     setSettings((s) => ({ ...s, ...patch }))
+  }, [])
+
+  const toggleTheme = useCallback(() => {
+    setSettings((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' }))
   }, [])
 
   const connectWallet = useCallback(() => {
@@ -213,6 +218,7 @@ export function StoreProvider({ children }) {
     () => ({
       settings,
       updateSettings,
+      toggleTheme,
       wallet,
       connectWallet,
       disconnectWallet,
@@ -229,7 +235,7 @@ export function StoreProvider({ children }) {
       resetDraft,
       clearStorage
     }),
-    [settings, updateSettings, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, chainRelics, chainLoading, draft, loadIntoDraft, resetDraft, clearStorage]
+    [settings, updateSettings, toggleTheme, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, chainRelics, chainLoading, draft, loadIntoDraft, resetDraft, clearStorage]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

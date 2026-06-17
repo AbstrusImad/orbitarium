@@ -10,6 +10,33 @@ import WalletButton from '../shared/WalletButton.jsx'
 import { useStore } from '../../state/store.jsx'
 import { getGenLayerStatus } from '../../genlayer/genlayerClient.js'
 
+function ThemeToggle({ theme, onToggle }) {
+  const isDark = theme !== 'light'
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      title={isDark ? 'Switch to light' : 'Switch to dark'}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      className="flex items-center justify-center rounded-lg hairline transition-colors"
+      style={{ width: 34, height: 34, background: 'var(--ink1)', color: 'var(--bone2)' }}
+    >
+      {isDark ? (
+        // moon
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      ) : (
+        // sun
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
 function Mark() {
   return (
     <div className="flex items-center gap-2.5 no-select">
@@ -28,7 +55,7 @@ function Mark() {
 }
 
 export default function OrbitalShell({ mode, onChange, children }) {
-  const { settings } = useStore()
+  const { settings, toggleTheme } = useStore()
   const [status, setStatus] = useState(null)
 
   useEffect(() => {
@@ -39,7 +66,7 @@ export default function OrbitalShell({ mode, onChange, children }) {
     return () => {
       active = false
     }
-  }, [settings.genlayerMode])
+  }, [])
 
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ background: 'var(--ink0)' }}>
@@ -61,13 +88,10 @@ export default function OrbitalShell({ mode, onChange, children }) {
               style={{ width: 7, height: 7, background: status?.online ? 'var(--sage)' : 'var(--ember)', boxShadow: status?.online ? '0 0 7px var(--sage)' : 'none' }}
             />
             <span className="mono text-[10px] uppercase tracking-wider text-ash">
-              {(settings.genlayerMode || 'live') === 'mock'
-                ? 'GenLayer mock'
-                : status?.online
-                ? 'GenLayer live'
-                : 'GenLayer Bradbury'}
+              {status?.online ? 'GenLayer live' : 'GenLayer Bradbury'}
             </span>
           </div>
+          <ThemeToggle theme={settings.theme} onToggle={toggleTheme} />
           <WalletButton />
         </div>
       </header>

@@ -97,7 +97,7 @@ export default function ConsensusOverlay({
               <div>
                 <p className="text-bone text-sm">A wallet holds the seal.</p>
                 <p className="text-xs text-ash mt-2 leading-snug">
-                  Connect on the GenLayer Bradbury testnet to let the validators read your authority map. You can also switch to mock mode in Settings to seal locally.
+                  Connect on the GenLayer Bradbury testnet to let the validators read your authority map and seal it on chain.
                 </p>
                 <button
                   onClick={onConnect}

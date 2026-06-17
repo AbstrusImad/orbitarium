@@ -1,7 +1,8 @@
 /*
   Settings.jsx
-  Theme, animation intensity, reduced motion, visual density, GenLayer mock
-  mode, wallet reset, data export/import and clear storage.
+  Animation intensity, reduced motion, visual density, wallet reset, data
+  export/import and clear storage. Theme lives in the header; GenLayer always
+  runs live against the Bradbury contract.
 */
 import React from 'react'
 import ModeHeader from '../components/layout/ModeHeader.jsx'
@@ -50,9 +51,6 @@ export default function Settings() {
       <ModeHeader kicker="Settings" title="Instrument Settings" hint="Tune the observatory. Everything stays local in your browser." />
       <div className="flex-1 overflow-auto px-6 pb-10">
         <div className="max-w-2xl">
-          <Row title="Theme" hint="Dark is the default. Light stays elegant.">
-            <Choice value={settings.theme} onChange={(v) => updateSettings({ theme: v })} options={[['dark', 'Dark'], ['light', 'Light']]} />
-          </Row>
           <Row title="Animation intensity" hint="How lively the orbital motion feels.">
             <Choice value={settings.animationIntensity} onChange={(v) => updateSettings({ animationIntensity: v })} options={[['low', 'Low'], ['medium', 'Medium'], ['high', 'High']]} />
           </Row>
@@ -61,9 +59,6 @@ export default function Settings() {
           </Row>
           <Row title="Visual density" hint="Compact tightens spacing across panels.">
             <Choice value={settings.visualDensity} onChange={(v) => updateSettings({ visualDensity: v })} options={[['comfortable', 'Comfortable'], ['compact', 'Compact']]} />
-          </Row>
-          <Row title="GenLayer mode" hint="Live runs real AI consensus on the GenLayer Bradbury testnet (a connected wallet is required to seal a relic). Mock simulates the on-chain flow locally with no network.">
-            <Choice value={settings.genlayerMode || 'live'} onChange={(v) => updateSettings({ genlayerMode: v })} options={[['live', 'Live'], ['mock', 'Mock']]} />
           </Row>
           <Row title="Wallet" hint={wallet.address ? `Connected as ${shortAddress(wallet.address)}${wallet.onChain ? ' on Bradbury' : ' (wrong network)'}` : 'Connect from the top bar to seal relics on chain'}>
             <button
@@ -95,7 +90,7 @@ export default function Settings() {
           </Row>
 
           <div className="mt-8 mono text-[10px] text-mute leading-relaxed">
-            Orbitarium reads the live GenLayer Bradbury contract and notarizes authority assessments through AI consensus. Mock mode keeps the full experience locally with no network. Systems and settings persist in localStorage.
+            Orbitarium reads the live GenLayer Bradbury contract and notarizes authority assessments through AI consensus. Saved systems and settings persist in localStorage; real on-chain relics always load from the contract.
           </div>
         </div>
       </div>

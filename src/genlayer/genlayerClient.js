@@ -316,7 +316,11 @@ export async function getGenLayerStatus() {
 // the Vault of Systems. Returns [] when not live, not deployed or on any read
 // failure, so the local collection is never disturbed.
 export async function fetchChainRelics() {
-  if (mode !== 'live' || !IS_DEPLOYED) return []
+  // The on-chain relic feed is a read-only public ledger of authority maps
+  // notarized on Bradbury. It is independent of the analyze/write mode: even in
+  // mock mode we still surface the real notarized maps, so the Vault and Void
+  // always reflect on-chain reality. Only gate on deployment.
+  if (!IS_DEPLOYED) return []
   try {
     const arr = await fetchRelics(0)
     return arr.map((r) => ({
