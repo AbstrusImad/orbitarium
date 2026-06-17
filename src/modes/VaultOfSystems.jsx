@@ -65,9 +65,7 @@ export default function VaultOfSystems({ onOpenSystem }) {
       </div>
 
       <div className="flex-1 overflow-auto px-6 pb-8">
-        {filtered.length === 0 ? (
-          <EmptyState title="No systems match" hint="Adjust the filters or import a system JSON to populate the vault." />
-        ) : (
+        {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(({ system }) => (
               <VaultCapsule
@@ -80,6 +78,12 @@ export default function VaultOfSystems({ onOpenSystem }) {
               />
             ))}
           </div>
+        ) : chainRelics && chainRelics.length > 0 ? (
+          <div className="mono text-[11px] text-mute py-5">
+            No local drafts yet. Your authority maps notarized on GenLayer are shown below.
+          </div>
+        ) : (
+          <EmptyState title="No systems yet" hint="Create an authority core and seal it on GenLayer, or import a system JSON, to populate the vault." />
         )}
 
         {chainRelics && chainRelics.length > 0 && (
