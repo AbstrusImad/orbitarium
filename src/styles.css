@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Orbitarium design tokens.
+  8-digit hex from the brief is interpreted AARRGGBB; here we express the
+  visible colors as standard hex/rgba. Dark is the default theme.
+*/
+:root,
+.theme-dark {
+  --ink0: #06080C;
+  --ink1: #0A0D13;
+  --ink2: #12161F;
+  --ink3: #1A1F2B;
+  --ink4: #232A39;
+  --ink5: #2D3548;
+
+  --line1: rgba(255, 255, 255, 0.05);
+  --line2: rgba(255, 255, 255, 0.10);
+  --line3: rgba(255, 255, 255, 0.18);
+
+  --bone: #EEF2F7;
+  --bone2: #B8C2CE;
+  --ash: #7A8390;
+  --mute: #4A5061;
+  --dim: #2A2E3A;
+
+  --sage: #6B9FE3;
+  --sage-text: #6B9FE3;
+  --sage-ink: #061226;
+  --sage-glow: rgba(107, 159, 227, 0.22);
+
+  --champagne: #7DD3E0;
+  --info-text: #7DD3E0;
+  --info-ink: #08222A;
+  --champagne-glow: rgba(125, 211, 224, 0.20);
+
+  --ember: #5E7A8C;
+  --ember-glow: rgba(94, 122, 140, 0.22);
+
+  --crimson: #D86969;
+  --crimson-glow: rgba(216, 105, 105, 0.22);
+
+  color-scheme: dark;
+}
+
+.theme-light {
+  --ink0: #F8FAFD;
+  --ink1: #F2F6FA;
+  --ink2: #FFFFFF;
+  --ink3: #F7FAFD;
+  --ink4: #EDF3F8;
+  --ink5: #E0E9F2;
+
+  --line1: rgba(19, 19, 34, 0.07);
+  --line2: rgba(19, 19, 34, 0.14);
+  --line3: rgba(19, 19, 34, 0.24);
+
+  --bone: #172235;
+  --bone2: #34455E;
+  --ash: #68788E;
+  --mute: #91A0B1;
+  --dim: #D5DDE7;
+
+  --sage: #356AAE;
+  --sage-text: #356AAE;
+  --sage-ink: #FFFFFF;
+  --sage-glow: rgba(53, 106, 174, 0.16);
+
+  --champagne: #247586;
+  --info-text: #247586;
+  --info-ink: #FFFFFF;
+  --champagne-glow: rgba(36, 117, 134, 0.16);
+
+  --ember: #5E7A8C;
+  --ember-glow: rgba(94, 122, 140, 0.16);
+
+  --crimson: #C84F5A;
+  --crimson-glow: rgba(200, 79, 90, 0.16);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--ink0);
+  color: var(--bone);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Sora', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.font-mono,
+.mono {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line2);
+  border-radius: 9px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line3);
+}
+
+/* Utility helpers */
+.glass {
+  background: color-mix(in srgb, var(--ink2) 78%, transparent);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--line2);
+}
+
+.hairline {
+  border: 1px solid var(--line2);
+}
+
+.text-grad-sage {
+  background: linear-gradient(120deg, var(--sage), var(--champagne));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.orbit-dotted {
+  stroke-dasharray: 2 6;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.anim-drift {
+  animation: drift 7s ease-in-out infinite;
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Range inputs (WeightDial) */
+.orb-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--ink4);
+  outline: none;
+}
+.orb-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bone);
+  border: 2px solid var(--ink0);
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--sage-glow);
+}
+.orb-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bone);
+  border: 2px solid var(--ink0);
+  cursor: pointer;
+}
+
+select {
+  color-scheme: dark;
+}
+.theme-light select {
+  color-scheme: light;
+}
