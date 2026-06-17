@@ -4,19 +4,18 @@
   Holds settings, the mock wallet, the vault of systems and the working draft.
 */
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { DEMO_SYSTEMS } from '../data/demoSystems.js'
 import { calculateAuthorityGravity } from '../utils/gravityEngine.js'
-import { setGenLayerMockMode } from '../genlayer/genlayerClient.js'
+import { setGenLayerMode, fetchChainRelics } from '../genlayer/genlayerClient.js'
 import { shortId } from '../utils/formatters.js'
 
-const STORAGE_KEY = 'orbitarium.v1'
+const STORAGE_KEY = 'orbitarium.v2'
 
 const DEFAULT_SETTINGS = {
   theme: 'dark',
   animationIntensity: 'high', // low | medium | high
   reducedMotion: false,
   visualDensity: 'comfortable', // compact | comfortable
-  genlayerMock: true
+  genlayerMode: 'live' // 'live' | 'mock'. Default is live.
 }
 
 const DEFAULT_WALLET = { connected: false, address: null }
@@ -32,8 +31,10 @@ function loadState() {
 }
 
 function seedVault() {
-  // Deep clone the demo systems so edits never mutate the source.
-  return DEMO_SYSTEMS.map((s) => JSON.parse(JSON.stringify(s)))
+  // No fictitious demo systems: the Vault shows only real authority relics
+  // notarized on GenLayer Bradbury (merged live from the contract) plus
+  // whatever the current user seals on chain.
+  return []
 }
 
 function emptyDraft() {
@@ -52,11 +53,12 @@ const StoreContext = createContext(null)
 
 export function StoreProvider({ children }) {
   const initial = useRef(loadState())
-  const [settings, setSettings] = useState(initial.current?.settings || DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState({ ...DEFAULT_SETTINGS, ...(initial.current?.settings || {}) })
   const [wallet, setWallet] = useState(initial.current?.wallet || DEFAULT_WALLET)
   const [systems, setSystems] = useState(() => initial.current?.systems || seedVault())
   const [draft, setDraft] = useState(() => initial.current?.draft || emptyDraft())
   const [seeded, setSeeded] = useState(initial.current?.seeded ?? false)
+  const [chainRelics, setChainRelics] = useState([])
 
   // First run: ensure vault is seeded.
   useEffect(() => {
@@ -85,8 +87,34 @@ export function StoreProvider({ children }) {
     root.classList.toggle('theme-dark', settings.theme === 'dark')
     root.classList.toggle('theme-light', settings.theme === 'light')
     document.body.classList.toggle('reduce-motion', settings.reducedMotion)
-    setGenLayerMockMode(settings.genlayerMock)
+    setGenLayerMode(settings.genlayerMode || 'live')
   }, [settings])
+
+  // Live mode: fetch on-chain relics on load and gently poll. These merge into
+  // the Vault as verified capsules; failures are swallowed so local content is
+  // never disturbed.
+  useEffect(() => {
+    let cancelled = false
+    let timer = null
+    const load = async () => {
+      try {
+        const relics = await fetchChainRelics()
+        if (!cancelled) setChainRelics(relics)
+      } catch (e) {
+        if (!cancelled) setChainRelics([])
+      }
+    }
+    if ((settings.genlayerMode || 'live') === 'live') {
+      load()
+      timer = setInterval(load, 90000)
+    } else {
+      setChainRelics([])
+    }
+    return () => {
+      cancelled = true
+      if (timer) clearInterval(timer)
+    }
+  }, [settings.genlayerMode])
 
   const updateSettings = useCallback((patch) => {
     setSettings((s) => ({ ...s, ...patch }))
@@ -180,13 +208,14 @@ export function StoreProvider({ children }) {
       deleteSystem,
       duplicateSystem,
       importSystem,
+      chainRelics,
       draft,
       setDraft,
       loadIntoDraft,
       resetDraft,
       clearStorage
     }),
-    [settings, updateSettings, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, draft, loadIntoDraft, resetDraft, clearStorage]
+    [settings, updateSettings, wallet, connectWallet, disconnectWallet, systems, saveSystem, deleteSystem, duplicateSystem, importSystem, chainRelics, draft, loadIntoDraft, resetDraft, clearStorage]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react'
 import Starfield from '../animations/Starfield.jsx'
 import ModeSwitcher from './ModeSwitcher.jsx'
-import MockWalletButton from '../shared/MockWalletButton.jsx'
+import WalletButton from '../shared/WalletButton.jsx'
 import { useStore } from '../../state/store.jsx'
 import { getGenLayerStatus } from '../../genlayer/genlayerClient.js'
 
@@ -39,7 +39,7 @@ export default function OrbitalShell({ mode, onChange, children }) {
     return () => {
       active = false
     }
-  }, [settings.genlayerMock])
+  }, [settings.genlayerMode])
 
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ background: 'var(--ink0)' }}>
@@ -61,10 +61,14 @@ export default function OrbitalShell({ mode, onChange, children }) {
               style={{ width: 7, height: 7, background: status?.online ? 'var(--sage)' : 'var(--ember)', boxShadow: status?.online ? '0 0 7px var(--sage)' : 'none' }}
             />
             <span className="mono text-[10px] uppercase tracking-wider text-ash">
-              {settings.genlayerMock ? 'GenLayer mock' : 'GenLayer off'}
+              {(settings.genlayerMode || 'live') === 'mock'
+                ? 'GenLayer mock'
+                : status?.online
+                ? 'GenLayer live'
+                : 'GenLayer Bradbury'}
             </span>
           </div>
-          <MockWalletButton />
+          <WalletButton />
         </div>
       </header>
 

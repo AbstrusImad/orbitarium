@@ -2,6 +2,23 @@
 
 Map the gravity of power.
 
+## Live
+
+- App: https://orbitarium-emv.pages.dev/
+- Contract (GenLayer Bradbury Testnet): `0xA877f907e6f48cb388C7e87b3FCC68C53C1AE0f3`
+- Explorer: https://explorer-bradbury.genlayer.com/address/0xA877f907e6f48cb388C7e87b3FCC68C53C1AE0f3
+- Deploy transaction: `0xdd411ecb9e5a3400059f7b9977203097c8fad37b99f2cd275b6069b12275b4ad`
+- Repository: https://github.com/AbstrusImad/orbitarium
+- Faucet (test GEN): https://testnet-faucet.genlayer.foundation/
+
+Orbitarium runs live on GenLayer Bradbury. Sealing an Authority Relic is a real
+on-chain consensus write: an authority-cartographer model reads the whole
+topology and validators agree on the centralization gravity within a tolerance
+band, binding the assessment to a content hash. The deployable Intelligent
+Contract is `genlayer/contract.py`. Connect a wallet on Bradbury and claim test
+GEN from the faucet to notarize a map on chain. Demo systems are still seeded so
+the Vault feels full, and a mock mode remains in Settings as an offline fallback.
+
 Orbitarium is an authority cartographer for DAOs, Web3 protocols, communities and governance systems. It turns the authority architecture of a protocol into a living orbital system, so hidden power becomes visible geometry. You do not fill a normal form. You design the gravity of power.
 
 - Protocol core is the central star.

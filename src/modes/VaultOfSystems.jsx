@@ -6,6 +6,7 @@
 import React, { useMemo, useState } from 'react'
 import ModeHeader from '../components/layout/ModeHeader.jsx'
 import VaultCapsule from '../components/vault/VaultCapsule.jsx'
+import ChainRelicCapsule from '../components/vault/ChainRelicCapsule.jsx'
 import ImportExportPanel from '../components/shared/ImportExportPanel.jsx'
 import EmptyState from '../components/shared/EmptyState.jsx'
 import { useStore } from '../state/store.jsx'
@@ -14,7 +15,7 @@ import { downloadJSON } from '../utils/exportImport.js'
 import { useToast } from '../components/shared/Toast.jsx'
 
 export default function VaultOfSystems({ onOpenSystem }) {
-  const { systems, deleteSystem, duplicateSystem, importSystem, loadIntoDraft } = useStore()
+  const { systems, deleteSystem, duplicateSystem, importSystem, loadIntoDraft, chainRelics } = useStore()
   const { push } = useToast()
   const [query, setQuery] = useState('')
   const [stabFilter, setStabFilter] = useState('all') // all | stable | unstable
@@ -78,6 +79,21 @@ export default function VaultOfSystems({ onOpenSystem }) {
                 onExport={() => downloadJSON(system, `${system.protocolName.replace(/\s+/g, '-').toLowerCase()}.json`)}
               />
             ))}
+          </div>
+        )}
+
+        {chainRelics && chainRelics.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: 'var(--sage)', boxShadow: '0 0 7px var(--sage)' }} />
+              <span className="mono text-[10px] uppercase tracking-wider text-sagetext" style={{ color: 'var(--sage)' }}>Verified on GenLayer</span>
+              <span className="mono text-[10px] text-mute ml-auto">{chainRelics.length} on-chain relics</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {chainRelics.map((relic) => (
+                <ChainRelicCapsule key={relic.id} relic={relic} />
+              ))}
+            </div>
           </div>
         )}
       </div>

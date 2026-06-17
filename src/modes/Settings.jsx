@@ -9,6 +9,7 @@ import ReducedMotionToggle from '../components/shared/ReducedMotionToggle.jsx'
 import ImportExportPanel from '../components/shared/ImportExportPanel.jsx'
 import { useStore } from '../state/store.jsx'
 import { useToast } from '../components/shared/Toast.jsx'
+import { useWallet, shortAddress } from '../genlayer/wallet.js'
 
 function Row({ title, hint, children }) {
   return (
@@ -40,8 +41,9 @@ function Choice({ value, options, onChange }) {
 }
 
 export default function Settings() {
-  const { settings, updateSettings, systems, importSystem, clearStorage, wallet, disconnectWallet } = useStore()
+  const { settings, updateSettings, systems, importSystem, clearStorage } = useStore()
   const { push } = useToast()
+  const wallet = useWallet()
 
   return (
     <div className="h-full flex flex-col">
@@ -60,24 +62,31 @@ export default function Settings() {
           <Row title="Visual density" hint="Compact tightens spacing across panels.">
             <Choice value={settings.visualDensity} onChange={(v) => updateSettings({ visualDensity: v })} options={[['comfortable', 'Comfortable'], ['compact', 'Compact']]} />
           </Row>
-          <Row title="GenLayer mock mode" hint="Simulates an on-chain authority registry locally. No network calls.">
-            <ReducedMotionToggle checked={settings.genlayerMock} onChange={(v) => updateSettings({ genlayerMock: v })} />
+          <Row title="GenLayer mode" hint="Live runs real AI consensus on the GenLayer Bradbury testnet (a connected wallet is required to seal a relic). Mock simulates the on-chain flow locally with no network.">
+            <Choice value={settings.genlayerMode || 'live'} onChange={(v) => updateSettings({ genlayerMode: v })} options={[['live', 'Live'], ['mock', 'Mock']]} />
           </Row>
-          <Row title="Mock wallet" hint={wallet.connected ? `Connected as ${wallet.address}` : 'Not connected'}>
+          <Row title="Wallet" hint={wallet.address ? `Connected as ${shortAddress(wallet.address)}${wallet.onChain ? ' on Bradbury' : ' (wrong network)'}` : 'Connect from the top bar to seal relics on chain'}>
             <button
-              onClick={() => { disconnectWallet(); push('Wallet reset', 'ember') }}
+              onClick={() => {
+                if (wallet.address) {
+                  wallet.disconnect()
+                  push('Wallet disconnected', 'ember')
+                } else {
+                  push('Use Connect Wallet in the top bar', 'champagne')
+                }
+              }}
               className="rounded-lg px-3 py-2 text-xs hairline text-bone2"
               style={{ background: 'var(--ink2)' }}
             >
-              Reset wallet
+              {wallet.address ? 'Disconnect' : 'Wallet'}
             </button>
           </Row>
           <Row title="Systems data" hint="Export every saved system, or import a system JSON.">
             <ImportExportPanel onImport={(s) => { importSystem(s) }} exportData={systems} exportName="orbitarium-all-systems.json" label="All systems" />
           </Row>
-          <Row title="Clear local storage" hint="Removes saved systems and settings, then reseeds the demo systems.">
+          <Row title="Clear local storage" hint="Removes saved systems and settings. Real on-chain relics still load from the contract.">
             <button
-              onClick={() => { clearStorage(); push('Local storage cleared and reseeded', 'crimson') }}
+              onClick={() => { clearStorage(); push('Local storage cleared', 'crimson') }}
               className="rounded-lg px-3 py-2 text-xs hairline text-crimson"
               style={{ background: 'var(--ink2)' }}
             >
@@ -86,7 +95,7 @@ export default function Settings() {
           </Row>
 
           <div className="mt-8 mono text-[10px] text-mute leading-relaxed">
-            Orbitarium runs fully in your browser. No backend, no external APIs, no network calls. Systems and settings persist in localStorage.
+            Orbitarium reads the live GenLayer Bradbury contract and notarizes authority assessments through AI consensus. Mock mode keeps the full experience locally with no network. Systems and settings persist in localStorage.
           </div>
         </div>
       </div>
